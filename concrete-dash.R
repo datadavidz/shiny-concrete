@@ -5,6 +5,10 @@ library(tidyverse)
 
 model <- readRDS("./models/concrete_xgb_model.rds")
 
+#the calculated specific volumes (m3/kg) for each ingredient
+spec_vol <- readRDS("./models/concrete_spec_vol.rds")
+
+# For testing prediction with given values
 # test <- tibble("cement" = 275,
 #        "blast_furnace_slag" = 20,
 #        "fly_ash" = 0,
@@ -13,6 +17,21 @@ model <- readRDS("./models/concrete_xgb_model.rds")
 #        "coarse_aggregate" = 975,
 #        "fine_aggregate" = 775,
 #        "age" = 28)
+
+# For testing calculation of specific volume
+# test <- tribble(~ingredient, ~amount,
+#                "cement", 275,
+#                "blast_furnace_slag", 20,
+#                "fly_ash", 0,
+#                "water", 185,
+#                "superplasticizer", 5,
+#                "coarse_aggregate", 975,
+#                "fine_aggregate", 775) %>%
+#     left_join(spec_vol, by = "ingredient") %>%
+#     mutate(ingred_vol = amount * specific_volume) %>%
+#     pull(ingred_vol) %>%
+#     sum
+
 
 ui <- dashboardPage(
     dashboardHeader(title = "Concrete App"),
@@ -48,15 +67,10 @@ ui <- dashboardPage(
                 ),
                 
                 column(width = 8,
-                       valueBoxOutput("concrete_prediction"),  
+                       valueBoxOutput("concrete_prediction"),
+                       valueBoxOutput("concrete_volume")
                 ),
             )
-            
-            # box(selectInput("v_island", label = "Island",
-            #                 choices = c("Dream", "Torgersen", "Biscoe"))),
-            # box(selectInput("v_sex", label = "Sex",
-            #                 choices = c("male", "female"))),
-            
         )
     )
 )
@@ -77,24 +91,6 @@ server <- function(input, output) {
                    "age" = input$v_age)
         )
         
-        # prediction_prob <- predict(
-        #     model,
-        #     tibble("island" = input$v_island,
-        #            "bill_length_mm" = input$v_bill_length,
-        #            "bill_depth_mm" = input$v_bill_depth,
-        #            "flipper_length_mm" = input$v_flipper_length,
-        #            "body_mass_g" = input$v_body_mass,
-        #            "sex" = input$v_sex),
-        #     type = "prob"
-        # ) %>% 
-        #     gather() %>% 
-        #     arrange(desc(value)) %>% 
-        #     slice(1) %>% 
-        #     select(value)
-        # 
-        # prediction_color <- if_else(prediction$.pred_class == "Adelie", "blue", 
-        #                             if_else(prediction$.pred_class == "Gentoo", "red", "yellow"))
-        
         valueBox(
             value = paste0(round(prediction$.pred, 1), "MPa"),
             subtitle = "Compressive Strength",
@@ -102,6 +98,29 @@ server <- function(input, output) {
             icon = icon("cog")
         )
         
+    })
+    
+    output$concrete_volume <- renderValueBox({
+        
+        volume <- tribble(~ingredient, ~amount,
+               "cement", input$v_cement,
+               "blast_furnace_slag", input$v_blast_furnace_slag,
+               "fly_ash", input$v_fly_ash,
+               "water", input$v_water,
+               "superplasticizer", input$v_superplasticizer,
+               "coarse_aggregate", input$v_coarse_aggregate,
+               "fine_aggregate", input$v_fine_aggregate) %>%
+            left_join(spec_vol, by = "ingredient") %>%
+            mutate(ingred_vol = amount * specific_volume) %>%
+            pull(ingred_vol) %>%
+            sum
+        
+        valueBox(
+            value = paste0(round(volume, 1), " m3"),
+            subtitle = "Concrete Volume",
+            color = "orange",
+            icon = icon("cog")
+        )
     })
     
 }
