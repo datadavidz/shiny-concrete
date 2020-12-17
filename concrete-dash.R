@@ -27,27 +27,36 @@ ui <- dashboardPage(
     dashboardBody(
         tabItem(
             tabName = "concrete_tab",
-            box(valueBoxOutput("concrete_prediction")),
+            fluidRow(
+                column(width = 4,
+                       box(sliderInput("v_cement", label = "Cement (kg)",
+                                       min = 100, max = 550, value = 275)),
+                       box(sliderInput("v_blast_furnace_slag", label = "Blast Furnace Slag (kg)",
+                                       min = 0, max = 375, value = 20)),
+                       box(sliderInput("v_fly_ash", label = "Fly Ash (kg)",
+                                       min = 0, max = 200, value = 0)),
+                       box(sliderInput("v_water", label = "Water (kg)",
+                                       min = 100, max = 250, value = 185)),
+                       box(sliderInput("v_superplasticizer", label = "Super-plasticizer (kg)",
+                                       min = 0, max = 35, value = 5)),
+                       box(sliderInput("v_coarse_aggregate", label = "Coarse Aggregate (kg)",
+                                       min = 800, max = 1150, value = 975)),
+                       box(sliderInput("v_fine_aggregate", label = "Fine Aggregate (kg)",
+                                       min = 575, max = 1000, value = 775)),
+                       box(sliderInput("v_age", label = "Age (days)",
+                                       min = 1, max = 365, value = 28)),   
+                ),
+                
+                column(width = 8,
+                       valueBoxOutput("concrete_prediction"),  
+                ),
+            )
+            
             # box(selectInput("v_island", label = "Island",
             #                 choices = c("Dream", "Torgersen", "Biscoe"))),
             # box(selectInput("v_sex", label = "Sex",
             #                 choices = c("male", "female"))),
-            box(sliderInput("v_cement", label = "Cement (kg)",
-                            min = 100, max = 550, value = 275)),
-            box(sliderInput("v_blast_furnace_slag", label = "Blast Furnace Slag (kg)",
-                            min = 0, max = 375, value = 20)),
-            box(sliderInput("v_fly_ash", label = "Fly Ash (kg)",
-                            min = 0, max = 200, value = 0)),
-            box(sliderInput("v_water", label = "Water (kg)",
-                            min = 100, max = 250, value = 185)),
-            box(sliderInput("v_superplasticizer", label = "Super-plasticizer (kg)",
-                            min = 0, max = 35, value = 5)),
-            box(sliderInput("v_coarse_aggregate", label = "Coarse Aggregate (kg)",
-                            min = 800, max = 1150, value = 975)),
-            box(sliderInput("v_fine_aggregate", label = "Fine Aggregate (kg)",
-                            min = 575, max = 1000, value = 775)),
-            box(sliderInput("v_age", label = "Age (days)",
-                            min = 1, max = 365, value = 28)),
+            
         )
     )
 )
