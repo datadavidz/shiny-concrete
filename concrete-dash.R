@@ -34,16 +34,23 @@ spec_vol <- readRDS("./models/concrete_spec_vol.rds")
 
 
 ui <- dashboardPage(
-    dashboardHeader(title = "Concrete App"),
+    dashboardHeader(title = "[concrete]"),
     
     dashboardSidebar(
-        menuItem(
-            "Compressive Strength",
-            tabName = "concrete_tab",
-            icon = icon("cog")
+        sidebarMenu(
+            menuItem(
+                "Prediction",
+                tabName = "concrete_tab",
+                icon = icon("cog")
+            ),
+            menuItem(
+                "Ingredient Effects",
+                tabName = "effects_tab"
+            )
         )
     ),
     dashboardBody(
+      tabItems(
         tabItem(
             tabName = "concrete_tab",
             fluidRow(
@@ -69,9 +76,23 @@ ui <- dashboardPage(
                 column(width = 8,
                        valueBoxOutput("concrete_prediction"),
                        valueBoxOutput("concrete_volume")
-                ),
+                )
+            )
+        ),
+        tabItem(
+            tabName = "effects_tab",
+            fluidRow(
+                column(width = 8,
+                    selectInput("explore_ingredient", "Ingredient to Explore:",
+                                c("Cement" = "cement",
+                                  "Blast Furnace Slag" = "blast_furnace_slag",
+                                  "Water" = "water"
+                                  )),
+                    textOutput("selected_ingredient")
+                )
             )
         )
+      )
     )
 )
 
@@ -115,12 +136,23 @@ server <- function(input, output) {
             pull(ingred_vol) %>%
             sum
         
-        valueBox(
-            value = paste0(round(volume, 1), " m3"),
-            subtitle = "Concrete Volume",
-            color = "orange",
-            icon = icon("cog")
-        )
+        if (volume > 1000) {
+            valueBox(
+                value = paste0(round(volume, 1), " m3"),
+                subtitle = "Concrete Volume",
+                color = "orange",
+                icon = icon("cog")
+        )} else {
+            valueBox(
+                value = paste0(round(volume, 1), " m3"),
+                subtitle = "Concrete Volume",
+                color = "red",
+                icon = icon("cog")    
+        )}
+    })
+    
+    output$selected_ingredient <- renderText({
+        paste("You chose:", input$explore_ingredient)
     })
     
 }
